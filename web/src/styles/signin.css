@@ -1,0 +1,109 @@
+/* The hosted sign-in page (hosted/SignIn.tsx): a centred card under the wordmark, in the upper third of the page,
+   as wide as the load screen's card (32rem, as in styles.css). Below it, the Settings consistency fixes: one heading level, the Save
+   buttons on one line, a quiet "Not set". They are here, not in styles.css, which the load screen's task owns. */
+
+.signin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+  min-height: 100vh;
+  padding: calc(12vh + var(--space-4)) var(--space-4) var(--space-6);
+}
+
+.signin-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-sizing: border-box;
+  width: min(32rem, 100%);
+  padding: var(--space-6);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+}
+
+.signin-title {
+  margin: 0;
+}
+
+.signin-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.signin-label > label {
+  font-weight: 600;
+}
+
+.signin-field input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--tap-size);
+  padding: var(--space-1) var(--space-3);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  font-size: var(--text-md);
+}
+
+.signin-error {
+  margin: 0;
+  color: var(--danger);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.signin-submit {
+  min-height: var(--tap-size);
+}
+
+/* "Visits are logged with a rough location, device and the fights you plan.": one quiet line under the button. */
+.signin-note {
+  margin: calc(-1 * var(--space-2)) 0 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+/* "Sign out" at the foot of "Load your save": the text-level second choice, at the card's right. */
+.load-signout {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+}
+
+/* Settings: the form's labels and the sections' headings are one level, the Save buttons share a line. */
+
+.settings-label > label,
+.settings-section h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.settings-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.settings-label > label {
+  margin: 0;
+}
+
+.settings-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.settings-none {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}

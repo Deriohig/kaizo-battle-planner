@@ -1,0 +1,19 @@
+# Never commit game files or data extracted from them
+*.nds
+*.dsv
+*.sav
+data/rom/
+data/docs/
+data/pkcalc/
+# The sprite cache and a stopped extract's temp folders beside it (data/sprites.tmp-…)
+data/sprites*/
+# Build and tooling
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# The hosted data bundle unpacked or packed at the repo root (scripts/makeBundle.ts writes it under dist/ by default).
+/pkp-data/
+pkp-data.tar.gz

@@ -1,0 +1,58 @@
+# The planner behind Caddy on one server (docs/deploy.md, "Compose on a VPS").
+#
+#   cp .env.example .env            # then set PKP_DOMAIN (and PKP_PASSWORD)
+#   tar -xzf pkp-data.tar.gz        # the bundle from `npm run bundle`, unpacked here as ./pkp-data
+#   docker compose up -d --build
+#
+# Caddy gets the HTTPS certificate for PKP_DOMAIN by itself (ports 80 and 443 must reach this machine). Run exactly
+# one planner: the players' sessions live in its memory.
+#
+# Both containers log to the host's journal, so their logs outlive a redeploy (which recreates the planner):
+# `journalctl -t pkp-planner -o cat` on the host, and `docker compose logs` still reads them. On a machine without
+# journald (Docker Desktop), set PKP_LOG_DRIVER=json-file in .env.
+
+services:
+  planner:
+    build:
+      context: ..
+      target: runtime
+      args:
+        PKP_VERSION: ${PKP_VERSION:-dev}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+    volumes:
+      - ./pkp-data:/data:ro
+    env_file: .env
+    environment:
+      PKP_TRUST_PROXY: "1"
+    mem_limit: 1g
+    expose: ["8080"]
+    logging:
+      driver: ${PKP_LOG_DRIVER:-journald}
+      options:
+        tag: pkp-planner
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on: [planner]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      PKP_DOMAIN: ${PKP_DOMAIN:?set PKP_DOMAIN in deploy/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    logging:
+      driver: ${PKP_LOG_DRIVER:-journald}
+      options:
+        tag: pkp-caddy
+
+volumes:
+  caddy_data:
+  caddy_config:

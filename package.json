@@ -1,0 +1,59 @@
+{
+  "name": "plat-kaizo-planner",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12 <23"
+  },
+  "scripts": {
+    "test": "vitest run --project unit --project web",
+    "test:real": "vitest run --project real",
+    "test:ai-read": "AI_READ_FULL=1 vitest run --project real test/real/aiViewOracle.test.ts test/real/aiReadCoverage.test.ts",
+    "extract": "tsx src/cli/extract.ts",
+    "sprites": "tsx src/cli/sprites.ts",
+    "box": "tsx src/cli/box.ts",
+    "sheet": "tsx src/cli/sheet.ts",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p web",
+    "build:web": "vite build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "build": "npm run build:web && npm run build:server",
+    "start": "node dist/server/server/main.js --hosted",
+    "bundle": "tsx scripts/makeBundle.ts",
+    "smoke": "bash deploy/smoke.sh",
+    "loadtest": "tsx scripts/loadTest.ts",
+    "dev:web": "vite",
+    "serve": "vite build && tsx src/server/main.ts",
+    "record:diffs": "tsx scripts/recordDiscrepancies.ts",
+    "bench:engine": "tsx scripts/benchEngine.ts",
+    "profile:solve": "tsx scripts/profileSolve.ts",
+    "bench:split": "tsx scripts/benchSplit.ts"
+  },
+  "dependencies": {
+    "@fontsource/chakra-petch": "5.3.0",
+    "@fontsource/ibm-plex-sans": "5.3.0",
+    "@pkmn/dex": "^0.10.15",
+    "@smogon/calc": "0.12.0",
+    "acorn": "^8.19.0",
+    "csv-parse": "^7.0.3",
+    "pokemon-showdown": "0.11.11",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.8",
+    "@types/node": "^22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "jsdom": "30.1.3",
+    "playwright": "^1.65.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "8.3.5",
+    "vitest": "^5.1.0"
+  }
+}

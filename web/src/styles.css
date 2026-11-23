@@ -1,0 +1,2578 @@
+/* The page's one stylesheet, with one dark theme: the navy and violet the player picked, whatever
+   the system prefers.
+
+   The components. Anything else a phase seems to need is mapped onto this list. Colours are written only in
+   the `:root` block below; everything else names a token.
+   - pill: read-only status. Grey outline, `--text-xs`, sentence case; `ok` and `danger` are outline plus text, never filled.
+   - chip: small interactive. A secondary button, `--tap-size` tall: switches, Matchups jumps, filters (`.chip`).
+   - tile: a move with its numbers. The Matchups move tile, reused for "Your choice".
+   - card: a followable result. `--surface-muted`, the strong border, a `--stripe` danger edge when one of his faints.
+   - stripe: tone on a block. A left edge `--stripe` wide in `--danger`, `--warn` or `--ok` (`.stripe-danger`, `-warn`, `-ok`).
+   - sheet: a side or full-height panel. The Settings sheet, reused for the Tree sheet.
+   - micro-label: a group heading inside a panel. Uppercase, `--text-xs` (`.micro-label`).
+   Token map (the planner's palette; the original names in brackets): `--accent` is text and borders (pick) and `--accent-fill` the one filled
+   button and the badges (pick-fill, on `--accent-fill-text`); `--ok` is his side (mine) and `--danger` theirs, with `--mine-surface` and
+   `--theirs-surface` their soft fills; `--band` the roll range, `--dmg` the lowest roll, `--hp` and `--hp-track` the HP bar.
+   Headings use `--font-display` (Chakra Petch), the rest `--font-sans` (IBM Plex Sans); both are bundled, no CDN.
+   Selected (`.selected`): the accent border on `--accent-surface`, never the primary fill (rule 0.4).
+   Sticky things: `--header-height` is written by the header at run time (Header.tsx, `useCssVar`); `--sticky-top` is that plus
+   the matchup bar's height; `--z-sticky` and `--z-sheet` are the layers (no literals). Fades are `--dim`, tone edges `--stripe`,
+   font sizes `--text-xs` to `--text-xl`, the border of a control, tile, card or chip `--border-strong`. */
+
+:root {
+  color-scheme: dark;
+
+  --font-display: 'Chakra Petch', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --line-height: 1.45;
+  --dim: 0.55;
+  --stripe: 4px;
+  --header-height: 0px;
+  --matchup-height: 0px;
+  --sticky-top: calc(var(--header-height) + var(--matchup-height));
+  --z-sticky: 10;
+  --z-sheet: 30;
+
+  --bg: #090b18;
+  --surface: #12152c;
+  --surface-muted: #1a1e3d;
+  --border: #2b3160;
+  --border-strong: #6f78b8;
+  --accent-surface: #27245f;
+  --text: #eef0ff;
+  --text-muted: #a2a8d4;
+  --accent: #c3bbff;
+  --accent-text: #0d0f24;
+  --ok: #3fd3a4;
+  --warn: #f5ad1f;
+  --danger: #ff8197;
+  --accent-fill: #6f5dfa;
+  --accent-fill-text: #ffffff;
+  --mine-surface: #0f3a33;
+  --theirs-surface: #45202c;
+  --band: #f5ad1f;
+  --hp: #3ecf7c;
+  --hp-track: #262b52;
+  --dmg: #03040a;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --tap-size: 36px;
+  /* The two control heights: --tap-size for normal controls, --control-sm for compact ones in dense lists. */
+  --control-sm: 28px;
+  --radius: 6px;
+  --radius-lg: 12px;
+  --shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+}
+
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: var(--text-md);
+  scroll-padding-top: var(--sticky-top);
+}
+
+/* No min-width here: the layout fits the window (1280 px and up, scrollbar included), and a wide table scrolls
+   sideways inside its own panel, never the page. */
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: var(--line-height);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: var(--text-xl);
+}
+
+h2,
+h3 {
+  font-size: var(--text-lg);
+}
+
+h4 {
+  font-size: var(--text-md);
+}
+
+a {
+  color: var(--accent);
+}
+
+code,
+kbd,
+pre {
+  font-family: var(--font-mono);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Where the page moves focus: the step's headings and leaf block (`data-focus`), and the fight section the
+   skip link goes to. They keep the global focus outline. */
+[data-focus]:focus-visible,
+#fight:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The skip link: the `.visually-hidden` box until it has focus, then a box at its own size over the
+   page's top left corner. */
+.skip-link:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link:focus {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: calc(var(--z-sheet) + 2); /* Over the Settings sheet and its backdrop. */
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap-size);
+  padding: 0 var(--space-3);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  font-size: var(--text-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* The compact button for dense lists: the same style at --control-sm. */
+.button-sm {
+  min-height: var(--control-sm);
+  padding: 0 var(--space-2);
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.button:disabled {
+  opacity: var(--dim);
+  cursor: not-allowed;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--accent);
+}
+
+.button-primary {
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+  color: var(--accent-fill-text);
+}
+
+/* App shell */
+
+.app {
+  min-height: 100vh;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-6);
+  padding: var(--space-3) var(--space-6);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+/* The load screen has its own wordmark over the card, so the title-only bar steps aside (it stays for screen readers). */
+.app:has(.load-screen) .app-header.is-bare {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: var(--text-xl);
+  white-space: nowrap;
+}
+
+.header-run {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.header-save {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+  min-width: 0;
+}
+
+.header-file {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  font-weight: 400;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.header-saved {
+  color: var(--text-muted);
+  font-size: var(--text-md);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+
+.header-flash {
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.header-live {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--text-md);
+  white-space: nowrap;
+}
+
+.header-dot {
+  width: 9px;
+  height: 9px;
+  background: var(--ok);
+  border-radius: 50%;
+}
+
+.header-live.is-reconnecting {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.header-live.is-reconnecting .header-dot {
+  background: var(--warn);
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+.app-loading {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.banner {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border: 0 solid var(--border);
+  border-left-width: var(--stripe);
+  border-radius: var(--radius);
+  overflow-wrap: anywhere;
+}
+
+.banner p {
+  margin: 0 0 var(--space-2);
+}
+
+/* Words with nothing after them (a failure with no button beside it) leave no gap at the banner's foot. */
+.banner p:last-child {
+  margin-bottom: 0;
+}
+
+.banner-warn {
+  border-left-color: var(--warn);
+}
+
+.banner-warn strong {
+  color: var(--warn);
+}
+
+.banner-danger {
+  border-left-color: var(--danger);
+}
+
+.banner-danger strong {
+  color: var(--danger);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  margin-bottom: -1px;
+  padding: var(--space-2) var(--space-4);
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  color: var(--text-muted);
+  font-size: var(--text-md);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab.is-active {
+  border-bottom-color: var(--accent);
+  color: var(--text);
+}
+
+.empty-state {
+  padding: var(--space-6);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.empty-state h2 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-lg);
+}
+
+.empty-state p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* Setup */
+
+.setup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 56rem;
+}
+
+.setup-step {
+  padding: var(--space-4);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+}
+
+.setup-step.is-waiting {
+  opacity: var(--dim);
+}
+
+.setup-step h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-lg);
+}
+
+.setup-number {
+  display: inline-grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  background: var(--accent-fill);
+  border-radius: 50%;
+  color: var(--accent-fill-text);
+  font-size: var(--text-sm);
+}
+
+.setup-ready {
+  margin: 0;
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.setup-ready::before {
+  content: '✓ ';
+}
+
+.setup-form {
+  margin-top: var(--space-2);
+}
+
+.setup-form > label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-weight: 600;
+}
+
+.setup-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.setup-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+}
+
+.setup-hint {
+  margin: var(--space-2) 0 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.setup-log {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-2) var(--space-3) var(--space-2) 2rem;
+  background: var(--surface-muted);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+.setup-error {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border-left: var(--stripe) solid var(--danger);
+  border-radius: var(--radius);
+  color: var(--danger);
+  overflow-wrap: anywhere;
+}
+
+.save-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.save-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.save-card:hover {
+  border-color: var(--accent);
+}
+
+.save-card.is-selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.save-card.is-unusable {
+  opacity: var(--dim);
+  cursor: not-allowed;
+}
+
+.save-card input[type='radio'] {
+  margin-top: 0.25rem;
+}
+
+.save-card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.save-card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.save-card-date {
+  font-weight: 600;
+}
+
+.save-newest {
+  padding: 0 var(--space-2);
+  background: none;
+  border: 1px solid var(--ok);
+  border-radius: 999px;
+  color: var(--ok);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.save-card-path {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+.save-card-error {
+  color: var(--danger);
+  overflow-wrap: anywhere;
+}
+
+.setup-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* Box */
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.box-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+}
+
+.box-toolbar h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.box-count {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.box-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: auto;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* The table scrolls sideways inside its panel when the window is too narrow for it. */
+.box-scroll {
+  overflow-x: auto;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+}
+
+.box-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.box-table th,
+.box-table td {
+  padding: var(--space-1) var(--space-2);
+  border-top: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.box-table thead th {
+  border-top: 0;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.box-table tr.is-ineligible td {
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}
+
+.box-where {
+  white-space: nowrap;
+}
+
+.box-name {
+  font-weight: 600;
+}
+
+.box-table tr.is-ineligible .box-name {
+  color: var(--text);
+}
+
+.box-num {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.box-moves,
+.box-reasons,
+.box-notes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.box-moves li {
+  white-space: nowrap;
+}
+
+.box-pp {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The IVs: six chips on one row, each coloured from 0 (red) to 31 (green) by its `--iv` and always showing the number,
+   so colour is never the only signal. */
+.box-ivs {
+  display: grid;
+  grid-template-columns: repeat(6, auto);
+  gap: 2px;
+}
+
+/* Positioned, so a nature mark's `.visually-hidden` words (absolute) stay inside the scrolling table, not past the page. */
+.box-iv {
+  position: relative;
+  padding: 0 var(--space-1);
+  border-radius: 4px;
+  background: hsl(calc(var(--iv) * 120 / 31) 45% 26%);
+  color: var(--text);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.box-iv-summary {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.box-evs {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.box-status.is-unwell {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.box-yes {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.box-table .box-reasons li {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.box-notes {
+  min-width: 10rem;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.box-empty {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* A group's heading row: the party or a box (and that it is a graveyard). */
+.box-table .box-group th,
+.box-table .box-group td {
+  padding-top: var(--space-2);
+  background: var(--surface-muted);
+  border-top: 2px solid var(--border);
+  vertical-align: middle;
+}
+
+.box-group th {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.box-graveyard {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-style: italic;
+}
+
+/* The heading row's graveyard note, then its Copy party or Copy box button. */
+.box-group-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* The heading row is already the muted surface: the button takes the page's. */
+.box-group .sheet-copy button {
+  background: var(--bg);
+}
+
+/* Settings */
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-sheet);
+  background: rgb(0 0 0 / 0.3);
+}
+
+.settings {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: calc(var(--z-sheet) + 1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: min(30rem, 100%);
+  padding: var(--space-4);
+  overflow-y: auto;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-head h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.settings-field select,
+.settings-field input {
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.settings-field input {
+  width: 8rem;
+}
+
+.settings-hint {
+  margin: var(--space-1) 0 0;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.settings-ok {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+.settings-error {
+  color: var(--danger);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.settings-section h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.settings-path {
+  max-width: 100%;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+.settings-extract {
+  width: 100%;
+}
+
+.settings-extract > summary {
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Matchups: the bar, then a card per trainer Pokémon and in it a card per pair, in the tree screen's look. */
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* The bar and each trainer Pokémon: surface cards, as the tree's step is. */
+.matchup-bar,
+.matchup-enemy {
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.matchup-bar {
+  padding: var(--space-3);
+}
+
+.matchup-field {
+  margin: 0 0 var(--space-2);
+  color: var(--text-muted);
+}
+
+.matchup-field strong {
+  color: var(--text);
+}
+
+/* Copy your team, Copy trainer's team and Open PKCalc: one line, which wraps. */
+.matchup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sheet-copy button {
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.sheet-copy button:hover {
+  border-color: var(--accent);
+}
+
+.sheet-pkcalc {
+  font-weight: 600;
+}
+
+.sheet-notes {
+  margin: var(--space-2) 0 0;
+  padding-left: 1.25rem;
+  color: var(--text-muted);
+}
+
+.sheet-level {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.sheet-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sheet-copy-status {
+  min-width: 5.5em;
+  color: var(--ok);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.sheet-copy-status.is-failed {
+  color: var(--danger);
+}
+
+/* A trainer Pokémon's head line: its name and level, its facts and its Copy set, on the muted surface. */
+.matchup-enemy-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-6);
+  padding: var(--space-3);
+  background: var(--surface-muted);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.matchup-enemy-head h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+/* The head line is already the muted surface: its button takes the card's. */
+.matchup-enemy-head .sheet-copy button {
+  background: var(--surface);
+}
+
+.matchup-enemy > .sheet-empty {
+  padding: var(--space-3);
+}
+
+.sheet-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+}
+
+.sheet-facts div {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.sheet-facts dt {
+  color: var(--text-muted);
+}
+
+.sheet-facts dt::after {
+  content: ':';
+}
+
+.sheet-facts dd {
+  margin: 0;
+}
+
+.sheet-disputed {
+  color: var(--warn);
+  font-weight: 600;
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+.sheet-empty {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* The pairs are apart by space, not by a rule between them (surfaces, not outlines). */
+.matchup-pairs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* A pair: who, Your moves, Their moves and Their reply across, then its notes and weather cases the whole width. */
+.matchup-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) repeat(3, minmax(0, 1fr));
+  gap: var(--space-2) var(--space-3);
+  align-items: start;
+  min-width: 0;
+  padding: var(--space-3);
+  overflow-wrap: anywhere;
+}
+
+.matchup-pair.no-reply {
+  grid-template-columns: minmax(0, 11rem) repeat(2, minmax(0, 1fr));
+}
+
+/* One of theirs can KO his in one use: a red edge, and "Can KO you in one hit" says it in words. */
+.matchup-pair.is-danger {
+  border-left: var(--stripe) solid var(--danger);
+}
+
+.matchup-notes,
+.matchup-cases {
+  grid-column: 1 / -1;
+}
+
+.matchup-who,
+.matchup-side,
+.matchup-reply {
+  min-width: 0;
+}
+
+/* Who: his Pokémon, its cap mark, the turn order, the danger line and his Copy set, one under the other. */
+.matchup-who {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.matchup-who h4 {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+
+/* "over the level cap (16)" may wrap in the narrow who part. */
+.pill.matchup-over {
+  white-space: normal;
+}
+
+.matchup-order {
+  margin: 0;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* What his Pokémon's numbers use: "HP 5/46 · Burned · Held item: Oran Berry", in the text colour, as it matters. */
+.matchup-state {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* At 1200 px the who part is 11rem: "Copy set" and its "Copied" would run out of it on one line. */
+.matchup-who .sheet-copy {
+  flex-wrap: wrap;
+}
+
+.sheet-order-player {
+  color: var(--ok);
+}
+
+.sheet-order-enemy,
+.sheet-order-tie {
+  color: var(--warn);
+}
+
+.matchup-danger {
+  margin: 0;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+/* A part's label ("Your moves", "Their reply"), and a weather case's: small, muted capitals. */
+.micro-label,
+.matchup-label,
+.sheet-case-label {
+  display: block;
+  margin: 0 0 var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.matchup-reply {
+  font-size: var(--text-sm);
+  line-height: 1.35;
+}
+
+.matchup-notes {
+  margin: 0;
+  padding-left: 1rem;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.sheet-note-warn {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+/* A pair's weather cases, at its foot: their head line, then one fold per case. */
+.sheet-cases-head {
+  margin: 0 0 var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.sheet-case {
+  margin: var(--space-1) 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: var(--stripe) solid var(--warn);
+  border-radius: var(--radius);
+}
+
+.sheet-case > summary {
+  padding: var(--space-1) var(--space-2);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sheet-case > summary:hover {
+  background: var(--surface-muted);
+}
+
+.sheet-case[open] > summary {
+  border-bottom: 1px solid var(--border);
+}
+
+.sheet-case-body {
+  padding: var(--space-2);
+}
+
+.sheet-case-meta {
+  margin: 0 0 var(--space-2);
+}
+
+.sheet-case-moves {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+/* Two moves across where two 8.5rem columns fit, else one: a part of a pair can be narrower than two, and a list that
+   asked for them would spill out of it. Each column is at least half the list, so never more than two. */
+.sheet-moves {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(min(8.5rem, 100%), (100% - var(--space-1)) / 2), 1fr));
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sheet-move {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  font-size: var(--text-sm);
+  line-height: 1.3;
+}
+
+.sheet-move.is-danger {
+  border-color: var(--danger);
+}
+
+/* An enemy move nothing bounds: amber, not red; "KO ?" says it in words. */
+.sheet-move.is-unknown {
+  border-color: var(--warn);
+  border-style: dashed;
+}
+
+.sheet-move-hit {
+  color: var(--warn);
+}
+
+.sheet-flag {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+/* The trainer AI's odds: the note in the bar, then each pair's Their reply. */
+.sheet-ai-note,
+.sheet-ai-failed {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-sm);
+}
+
+.sheet-ai-note {
+  color: var(--text-muted);
+}
+
+/* The live region beside the note: "Working out the AI…" while pending, empty (and no height) once done. */
+.sheet-ai-status {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.sheet-ai-failed {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.sheet-ai-line {
+  margin: 0 0 var(--space-1);
+  font-variant-numeric: tabular-nums;
+}
+
+.sheet-ai-line:last-child {
+  margin-bottom: 0;
+}
+
+.sheet-ai-lead {
+  font-weight: 600;
+}
+
+/* A `depends` answer: its head line, then one indented line per case, close together. */
+.sheet-ai-head {
+  margin-bottom: 0;
+}
+
+.sheet-ai-cases {
+  margin: 0 0 var(--space-1);
+  padding: 0 0 0 var(--space-3);
+  list-style: none;
+}
+
+.sheet-ai-cases:last-child {
+  margin-bottom: 0;
+}
+
+.sheet-ai-cases .sheet-ai-line {
+  margin: 0;
+}
+
+.sheet-ai-pending,
+.sheet-ai-muted {
+  color: var(--text-muted);
+}
+
+.sheet-ai-pending {
+  font-style: italic;
+}
+
+.sheet-ai-unproven {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+/* Fight workspace: the next fights on top, then a 320 px team column beside the open fight. The fight column may shrink
+   below its content (min-width 0), so nothing in it pushes the page wider. */
+
+.fight-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.fight {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-4);
+}
+
+/* While a plan is on the page the team column goes (it is the plan screen's left column); "Edit team" brings it back above. */
+.fight.is-planning {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.fight-team[hidden] {
+  display: none;
+}
+
+.fight-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.fight-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+}
+
+/* The trainer and the Fight / Matchups tabs as one bar (critique fix 9): the header on the left, the tabs on the right at
+   the bar's foot, their underline on its lower edge. A double's bar is the header alone, as before. */
+.fight-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0 var(--space-4);
+  min-width: 0;
+  padding: 0 var(--space-4);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+}
+
+.fight-bar > .fight-header {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: var(--space-3) 0;
+  background: none;
+  border-radius: 0;
+}
+
+.fight-bar > .tabs {
+  border-bottom: 0;
+}
+
+.fight-title {
+  min-width: 0;
+}
+
+.fight-title h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.fight-meta {
+  margin: var(--space-1) 0 0;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.fight-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  min-width: 0;
+}
+
+.fight-variant {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+.fight-variant label {
+  font-weight: 600;
+}
+
+.fight-variant select {
+  max-width: 100%;
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.fight-note {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.fight-panel {
+  min-width: 0;
+}
+
+.fight-sheet > .app-loading {
+  margin-bottom: var(--space-3);
+}
+
+.fight-sheet[aria-busy='true'] > .sheet {
+  opacity: var(--dim);
+}
+
+/* Matchups: the note that the team is empty, or the sheet. */
+.matchups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.matchups-note {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.pill {
+  display: inline-block;
+  padding: 0 var(--space-2);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.pill-danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* A double battle's one quiet tag ("2v2"): the plain pill, with its title saying why. Positioned, so its `.visually-hidden`
+   words (absolute) stay inside the scrolling strip, not past the page's right edge (as `.box-iv`). */
+.pill-double {
+  position: relative;
+  cursor: help;
+}
+
+.icon-button {
+  min-width: var(--control-sm);
+  min-height: var(--control-sm);
+  padding: 0 var(--space-1);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.icon-button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.icon-button:disabled {
+  opacity: var(--dim);
+  cursor: default;
+}
+
+/* Team column (the stored team): a card that may shrink with its column. A row is one wrapping line and a long name
+   breaks anywhere, so nothing pushes the page sideways at 375 px; the editor opened under a row, and why a typed level
+   snapped back, each take a line of their own. Over the cap and Edited are warning marks, not danger ones: such a
+   Pokémon may join, and an edit is the player's own. The team's two buttons and the save-change notice wrap the same way. */
+
+.team-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3);
+  background: var(--surface);
+  border-radius: var(--radius);
+}
+
+.team-panel-heading {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.team-panel-note {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.team-panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.team-panel-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius);
+}
+
+.team-panel-name {
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.team-panel-level {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.team-panel-level .draft-number {
+  width: 4rem;
+}
+
+.team-panel-fact {
+  color: var(--text-muted);
+}
+
+.pill.team-panel-over,
+.pill.matchup-over {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.team-panel-actions {
+  display: inline-flex;
+  gap: var(--space-1);
+  margin-left: auto;
+}
+
+.team-panel-alert {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--danger);
+}
+
+.team-panel-row > .draft-editor {
+  flex-basis: 100%;
+}
+
+.team-panel-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.team-panel-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+.team-panel-add {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+.team-panel-add label {
+  font-weight: 600;
+}
+
+.team-panel-add select {
+  flex: 1 1 12rem;
+  min-width: 0;
+  max-width: 100%;
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+/* The draft editor (one Pokémon of the team, under its row): a muted card that may shrink with the column. Each part is
+   one wrapping line, its note on a line of its own; selects and number fields never grow past the card, and the IV and
+   EV grids are three columns that may shrink, so nothing pushes the page sideways at 375 px. */
+
+.draft-editor {
+  min-width: 0;
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface-muted);
+  border-radius: var(--radius);
+  display: grid;
+  gap: var(--space-3);
+}
+
+.draft-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.draft-label {
+  font-weight: 600;
+}
+
+.draft-note {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.draft-editor select {
+  max-width: 100%;
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.draft-number {
+  width: 5.5rem;
+  max-width: 100%;
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+/* An EXP runs to seven digits. */
+.draft-number.draft-exp {
+  width: 7.5rem;
+}
+
+.draft-number:disabled {
+  opacity: var(--dim);
+}
+
+.draft-advanced,
+.draft-advanced-body,
+.draft-stats-part {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.draft-advanced-body[hidden] {
+  display: none;
+}
+
+.draft-advanced > .button {
+  justify-self: start;
+}
+
+.draft-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.draft-stat {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.draft-stat-name {
+  color: var(--text-muted);
+}
+
+.draft-alert {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--danger);
+}
+
+/* Next fights: a card that may shrink with its column. The fights are one row that scrolls sideways inside its own box
+   (never the page, at 375 px too); a fight's name stays on one line and ends in an ellipsis. The search results under
+   it are the trainer rows below, and scroll in their own box so a long result list never pushes the team away. */
+
+.run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: var(--space-3);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+}
+
+.run-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+
+.run-heading {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.run-count,
+.run-none {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.run-split,
+.run-search-input {
+  max-width: 100%;
+  min-height: var(--tap-size);
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.run-fights {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--space-2);
+  overflow-x: auto;
+  margin: 0;
+  padding: 0 0 var(--space-2);
+  list-style: none;
+}
+
+/* The item, not only its button, keeps its width: the row scrolls rather than squeezes. */
+.run-fights > li {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.run-fight {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  max-width: 16rem;
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: left;
+  cursor: pointer;
+}
+
+.run-fight:hover {
+  background: var(--surface-muted);
+}
+
+.run-fight[aria-pressed='true'] {
+  background: var(--surface-muted);
+  border-color: var(--accent);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.run-fight-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.run-fight-location {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+/* A long mark ("Double battle: can't be built yet") wraps inside the fight rather than past it. */
+.run-fight .pill {
+  white-space: normal;
+}
+
+.pill.run-next {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.run-search-input {
+  width: 100%;
+}
+
+.run-results {
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+/* Trainer rows: the trainer search's results, grouped by split */
+
+.trainer-split h3 {
+  margin: var(--space-3) 0 var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.trainer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trainer-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius);
+}
+
+.trainer-pick {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px var(--space-2);
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  text-align: left;
+}
+
+button.trainer-pick {
+  cursor: pointer;
+}
+
+button.trainer-pick:hover {
+  background: var(--surface-muted);
+}
+
+.trainer-row.is-selected .trainer-pick {
+  background: var(--surface-muted);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.trainer-name {
+  font-weight: 600;
+}
+
+.trainer-location {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.trainer-pills {
+  display: flex;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  gap: 2px var(--space-1);
+}
+
+.trainer-none {
+  margin: var(--space-2) 0;
+  color: var(--text-muted);
+}
+
+/* Line builder (the fight view's Line tab) */
+
+.line {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.line-muted {
+  color: var(--text-muted);
+}
+
+/* The server's own words, one click away behind Details: a failed step's banner, "Their reply". */
+.server-words {
+  margin-top: var(--space-2);
+}
+/* Straight after the sentence, the sentence's own margin is the gap. */
+.banner > p + .server-words {
+  margin-top: 0;
+}
+.server-words > summary {
+  cursor: pointer;
+}
+
+.line-start {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.line-start h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-lg);
+}
+
+.line-saved {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.line-saved li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+}
+
+.line-start select {
+  padding: var(--space-1) var(--space-2);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+}
+
+.line-start .button {
+  padding: var(--space-1) var(--space-3);
+}
+
+/* Line builder: changing the team */
+
+/* The tree screen: the step (the matchup, Your choice beside Their reply, and the outcomes of a choice as cards)
+   and the tree's outline beside it. */
+
+@media (max-width: 1180px) {
+  
+  /* Matchups: a pair's who and Their reply each take the whole width, with Your moves beside Their moves between. */
+  .matchup-pair,
+  .matchup-pair.no-reply {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .matchup-who,
+  .matchup-reply {
+    grid-column: 1 / -1;
+  }
+
+  /* Across the whole width, who's lines run on and wrap rather than stand one under the other. */
+  .matchup-who {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+  }
+}
+
+/* The step's four parts: surface cards that may shrink with their column. */
+.tree-choice,
+.tree-reply,
+.tree-outcomes {
+  min-width: 0;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.tree-choice h4,
+.tree-reply h4,
+.tree-outcomes h4 {
+  margin: 0 0 var(--space-2);
+}
+
+.tree-outcomes > p {
+  margin: 0 0 var(--space-2);
+}
+
+/* "Working out the next step…" first in the step (or the start screen), with Stop once it is slow. */
+.tree-working {
+  margin: 0;
+}
+
+.tree-options,
+.tree-reply-moves,
+.tree-groups,
+.tree-exact {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tree-option,
+.tree-card,
+.tree-exact-result {
+  font: inherit;
+  color: inherit;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.tree-option:hover:not(:disabled):not([aria-disabled='true']),
+.tree-card:hover:not([aria-disabled='true']),
+.tree-exact-result:hover:not([aria-disabled='true']) {
+  border-color: var(--accent);
+}
+
+/* A choice that cannot be picked at this step (an AI error). A busy one is aria-disabled and keeps its look. */
+.tree-option:disabled {
+  opacity: var(--dim);
+  cursor: not-allowed;
+}
+
+/* His choice: the move (or switch) and its PP (or HP) on the first line, its damage on the second. */
+.tree-option {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-1) var(--space-3);
+  font-weight: 600;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.tree-option-meta,
+.tree-option-numbers,
+.tree-numbers {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.tree-option-numbers {
+  font-size: var(--text-xs);
+}
+
+/* "Working out…" at the right of the pick being worked out. */
+.tree-option-working {
+  margin-left: auto;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.tree-reply-odds {
+  font-weight: 600;
+  margin: 0;
+}
+
+.tree-reply-moves {
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+/* "AI 10.4%" stays on one line. */
+.tree-reply-ai {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tree-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0 0 var(--space-2);
+}
+
+.tree-totals div {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.tree-totals dt {
+  color: var(--text-muted);
+}
+
+.tree-totals dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.tree-totals .is-danger dt,
+.tree-totals .is-danger dd {
+  color: var(--danger);
+}
+
+.tree-group {
+  min-width: 0;
+}
+
+/* A card: its percent in the first column, every line of it in the second. */
+.tree-card {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 0 var(--space-3);
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.tree-card > :not(.tree-card-pct) {
+  grid-column: 2;
+}
+
+.tree-card.is-death {
+  border-left: var(--stripe) solid var(--danger);
+}
+
+/* A card, its outline step, its reply and its party are 13 px; their detail lines are 12. */
+.tree-card,
+.tree-reply {
+  font-size: var(--text-sm);
+}
+
+.tree-card-pct {
+  font-size: var(--text-lg);
+}
+
+.tree-card-pct,
+.tree-exact-pct {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tree-card-head {
+  font-weight: 600;
+}
+
+.tree-card-hp,
+.tree-card-rolls {
+  font-variant-numeric: tabular-nums;
+}
+
+.tree-card-detail,
+.tree-card-rolls {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+/* One line per Pokémon paid EXP. */
+.tree-card-exp {
+  color: var(--ok);
+  font-size: var(--text-xs);
+}
+
+.tree-card-crit {
+  color: var(--warn);
+  font-size: var(--text-xs);
+}
+
+.tree-card-death {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.tree-exact-toggle {
+  margin-top: var(--space-1);
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--accent);
+  font-size: var(--text-xs);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* The exact results: an indented list of smaller buttons under their card. */
+.tree-exact {
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  padding-left: var(--space-6);
+}
+
+/* A grid beats the browser's own `[hidden] { display: none }`: a closed list (kept for the toggle's aria-controls) takes no room. */
+.tree-exact[hidden] {
+  display: none;
+}
+
+.tree-exact-result {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.tree-exact-ai {
+  color: var(--text-muted);
+}
+
+/* Matchups' line over a carried fight: the sheet under it keeps its distance. */
+.fight-panel > .fight-note {
+  margin-bottom: var(--space-2);
+}
+
+/* Phone widths: the fight page is one column and wide tables scroll in their own boxes. */
+@media (max-width: 860px) {
+  /* The header wraps to ~190px here; a sticky one would eat a quarter of the screen. */
+  .app-header {
+    position: static;
+  }
+
+  .fight {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  /* Thumb-sized controls: the team's row buttons and level field, and everything in the draft editor. */
+  .team-panel button,
+  .team-panel input,
+  .team-panel select,
+  .draft-editor button,
+  .draft-editor input,
+  .draft-editor select {
+    min-height: var(--tap-size);
+  }
+
+  .team-panel .icon-button {
+    min-width: var(--tap-size);
+  }
+
+  /* The tree's step: Your choice above Their reply, and the two active Pokémon and the two parties one under the other. */
+  
+  /* The outline's rows are tapped to jump and to open: thumb-sized too. */
+  
+  
+  /* A card's "Show the N exact results" is tapped too. */
+  .tree-exact-toggle {
+    min-height: var(--tap-size);
+  }
+
+  /* The next fight's selects and Lead buttons are tapped too, and the carried banner's Back. */
+  
+  
+  
+  /* The failed step's banner: its Try again, "Start again" and "Back to …" are tapped too; so is any Details. */
+  .server-words > summary {
+    min-height: var(--tap-size);
+  }
+
+  /* Undo, where the tree was after Clear tree, is tapped too. */
+  
+  /* Matchups: a pair's parts one under the other, and a weather case's two sides too. */
+  .matchup-pair,
+  .matchup-pair.no-reply {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sheet-case-moves {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Its Copy buttons, Try again, the weather folds and Open PKCalc are tapped too. */
+  .sheet button,
+  .sheet summary,
+  .sheet-pkcalc {
+    min-height: var(--tap-size);
+  }
+
+  /* A link is inline: as a flex box it takes the height, with its words centred in it. */
+  .sheet-pkcalc {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-actions {
+    flex-wrap: wrap;
+  }
+
+  .app-header h1,
+  .header-live {
+    white-space: normal;
+  }
+}
+
+.chip {
+  min-height: var(--tap-size);
+  padding: 0 var(--space-3);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Selected (rule 0.4): the accent border, 2 px to the eye with no layout shift, on the accent surface. Never the primary fill. */
+.selected,
+.tree-option.is-selected,
+.chip[aria-pressed='true'] {
+  background: var(--accent-surface);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  color: var(--text);
+}
+
+.stripe-danger {
+  border-left: var(--stripe) solid var(--danger);
+}
+
+.stripe-warn {
+  border-left: var(--stripe) solid var(--warn);
+}
+
+.stripe-ok {
+  border-left: var(--stripe) solid var(--ok);
+}
+
+/*
+ * A busy control: aria-disabled while a step is worked out, never disabled, so focus stays on it. It keeps
+ * its full look (no fade): the page's words say what is worked out, and the cursor says the control is busy. Last in the
+ * sheet, so it wins over each control's own pointer.
+ */
+[aria-disabled='true'] {
+  cursor: progress;
+}
+
+/* Hosted: the load screen's drop area and the window drop overlay */
+
+.load-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.load-drop strong {
+  color: var(--text);
+  font-size: var(--text-md);
+}
+
+.load-drop.is-over {
+  background: var(--accent-surface);
+  border-color: var(--accent);
+}
+
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-sheet) + 2);
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.drop-overlay::before {
+  content: '';
+  position: absolute;
+  inset: var(--space-4);
+  background: var(--bg);
+  border: 3px dashed var(--accent);
+  border-radius: var(--radius-lg);
+  opacity: var(--dim);
+}
+
+/* The text sits in a span, painted over the dimmed backdrop above (no z-index needed). */
+.drop-overlay > span {
+  position: relative;
+}
+
+/* One ⓘ per panel (InfoTip.tsx): a quiet round button; the popover sits under it, over the content. */
+.info-tip {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+/* 24 px: the smallest target size (WCAG 2.5.8). */
+.info-tip-button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  line-height: 1;
+  cursor: help;
+}
+
+.info-tip-button:hover,
+.info-tip-button[aria-expanded='true'] {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.info-tip-text {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  z-index: var(--z-sheet);
+  width: max-content;
+  max-width: 320px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface-muted);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  line-height: var(--line-height);
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: normal;
+}
+
+.info-tip-text[hidden] {
+  display: none;
+}
+
+/* The wordmark (Wordmark.tsx): a route mark and the name, the second word lighter. The icon's colours are the
+   tokens; the favicon (web/public/favicon.svg) draws the same mark on the accent fill. */
+.wordmark {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.wordmark-md {
+  font-size: var(--text-xl);
+}
+
+.wordmark-lg {
+  font-size: var(--text-xl);
+}
+
+.wordmark-icon {
+  width: 1.25em;
+  height: 1.25em;
+  margin-right: 0.4em;
+  vertical-align: -0.28em;
+}
+
+.wordmark-lg .wordmark-icon {
+  width: 1.6em;
+  height: 1.6em;
+}
+
+.wordmark-tile {
+  fill: var(--accent-fill);
+}
+
+.wordmark-route {
+  fill: none;
+  stroke: var(--accent-fill-text);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wordmark-node {
+  fill: var(--accent);
+}
+
+.wordmark-light {
+  font-weight: 500;
+  color: var(--accent);
+}
+
+/* The load screen (LoadSave.tsx): the wordmark over a centred card in the upper third. */
+.load-screen {
+  align-items: center;
+  max-width: none;
+  margin-top: 12vh;
+}
+
+.load-brand {
+  display: flex;
+  justify-content: center;
+}
+
+.load-card {
+  box-sizing: border-box;
+  width: min(32rem, 100%);
+}
+
+.load-screen .setup-hint {
+  text-align: center;
+}
+
+.load-card h2 {
+  justify-content: center;
+}
+
+.load-drop .button {
+  margin-top: var(--space-2);
+}
+
+.load-secondary {
+  background: none;
+  border-color: transparent;
+  color: var(--accent);
+  text-decoration: underline;
+  font-weight: 400;
+}

@@ -1,0 +1,4 @@
+# The deployment's own secrets and the game data bundle: never committed.
+.env
+pkp-data/
+*.tar.gz

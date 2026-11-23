@@ -1,0 +1,9 @@
+# HTTPS in front of the planner (docs/deploy.md). Caddy fetches and renews the certificate for PKP_DOMAIN; with
+# PKP_DOMAIN=localhost it uses its own local one. `flush_interval -1` sends the AI odds' stream on as it comes.
+{$PKP_DOMAIN} {
+	encode zstd gzip
+	header Strict-Transport-Security "max-age=31536000"
+	reverse_proxy planner:8080 {
+		flush_interval -1
+	}
+}

@@ -1,0 +1,145 @@
+/* Matchups page, on top of styles.css (it comes later, so equal selectors win here): the one sticky "Show / Go to" bar
+   (.matchups-nav) with its groups and .chip buttons, the one-line matchup bar (field, copies, ⓘ), the scroll offset of each
+   enemy card under the sticky bar, the notes every pair of an enemy shares (.matchup-shared-notes in .matchup-enemy-head),
+   the move tiles without an outline (a plain tile is not a button; the red stripe says "can KO") and the pair row's width
+   cap. Colours all come from the existing tokens. */
+
+/* One bar: Show and Go to side by side, wrapping; it sticks under the app header. */
+.matchups-nav {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-2) var(--space-6);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border-radius: var(--radius);
+  position: sticky;
+  top: var(--header-height);
+  z-index: var(--z-sticky);
+}
+
+/* The matchup bar is one line: the field, the copies and the ⓘ; the notes are in the ⓘ. No outline of its own. */
+.matchup-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+}
+
+/* The three actions spaced as the bar's parts are; a Copy button's "Copied" sits under it, out of the line, so an empty
+   status leaves no gap of its own. */
+.matchup-actions {
+  gap: var(--space-2) var(--space-3);
+}
+
+.matchup-actions .sheet-copy {
+  position: relative;
+}
+
+.matchup-actions .sheet-copy-status {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.matchup-bar .matchup-field {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.matchup-bar .sheet-ai-note,
+.matchup-bar .sheet-ai-failed,
+.matchup-bar .sheet-ai-status {
+  margin: 0;
+}
+
+.matchup-nav-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
+}
+
+.matchup-nav-group .matchup-label {
+  margin: 0;
+}
+
+/* Chips are styles.css's shared .chip (and its pressed state); here only their size and hover. */
+.matchups-nav .chip {
+  font-size: var(--text-sm);
+}
+
+.matchups-nav .chip:hover:not([aria-pressed='true']) {
+  border-color: var(--accent);
+}
+
+.matchup-enemy {
+  scroll-margin-top: calc(var(--matchups-nav-height, 0px) + var(--space-2));
+}
+
+.matchup-shared-notes {
+  flex-basis: 100%;
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+/* A move is the tree's shared `.tile`, whose box rules are scoped to the tree's lists, so here the `li.sheet-move` stays the
+   box (styles.css) and the tile only lays its parts out as Matchups did: the name on a line, damage and KO side by side
+   (wrapping), the flags under them. */
+.sheet-move .tile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+  min-width: 0;
+}
+
+.sheet-move .tile-head,
+.sheet-move .tile-extra {
+  flex-basis: 100%;
+}
+
+.sheet-move .tile-extra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+}
+
+/* "KO ?" on either side: amber and bold, as before (red stays for real one-hit KO chances). */
+.sheet-move.is-ko-unknown .tile-ko {
+  color: var(--warn);
+  font-weight: 700;
+}
+
+.sheet-move .tile-ko.is-danger {
+  font-weight: 700;
+}
+
+/* A move tile is not a button: no outline, the fill only. "Can KO" is the danger stripe the pair row uses; "KO ?" is
+   its amber words. */
+.sheet-move,
+.sheet-move.is-unknown {
+  border: 0;
+}
+
+.sheet-move.is-danger {
+  box-shadow: inset var(--stripe) 0 0 var(--danger);
+}
+
+/* A wide screen does not spread the four parts of a pair: each of the three move columns stops at 24rem. */
+.matchup-pair {
+  grid-template-columns: minmax(0, 11rem) repeat(3, minmax(0, 24rem));
+  justify-content: start;
+}
+
+.matchup-pair.no-reply {
+  grid-template-columns: minmax(0, 11rem) repeat(2, minmax(0, 24rem));
+}

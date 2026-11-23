@@ -1,0 +1,513 @@
+/* The tree's step panels. Move tiles and switch chips (Your choice), the likelihood list (Their reply), the
+   damage band and the crit split.
+   Sizes, colours and the stripe width are the design tokens styles.css defines, used straight. Every tile and chip
+   rule is scoped to the tree's own lists (`.tree-tiles`, `.tree-chips`), so the shared `.chip` and a tile elsewhere keep
+   their own look; two classes also beat the old `.tree-option` button rule in styles.css. Tone is words plus a left
+   stripe, never a tinted surface. */
+
+/* Move tiles: two to a row. */
+.tree-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tree-tiles > li {
+  display: flex;
+  min-width: 0;
+}
+
+.tree-tiles .tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 400;
+  text-align: left;
+}
+
+.tile-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+}
+
+.tile-sub {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.tree-tiles .tile .band {
+  margin: var(--space-1) 0;
+}
+
+.tile-name {
+  font-weight: 600;
+}
+
+.tile-meta {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-damage,
+.tile-ko {
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-ko-line {
+  display: block;
+}
+
+.tile-ko.is-ok {
+  color: var(--ok);
+}
+
+.tile-ko.is-danger {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.tile-extra,
+.tile-priority,
+.tile-working {
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+.tile-extra {
+  color: var(--text-muted);
+}
+
+/* Chips: a switch, as a wrapped row of buttons. */
+.tree-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tree-chips .chip {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  min-height: var(--tap-size);
+  padding: var(--space-1) var(--space-3);
+  background: var(--surface-muted);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+.chip-working {
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* Hover and keyboard focus: the accent border (never a fill). */
+.tree-tiles .tile:hover:not(:disabled):not([aria-disabled='true']),
+.tree-chips .chip:hover:not(:disabled):not([aria-disabled='true']),
+.tree-tiles .tile:focus-visible,
+.tree-chips .chip:focus-visible {
+  border-color: var(--accent);
+}
+
+/* Selected: the look styles.css gives (the accent surface, a 1px accent border and an inset 1px accent shadow, 2px to the
+   eye with no layout shift). The scoped rules above come after W's and set the background and border, so these give
+   those two back; W's inset shadow and text colour apply as they are. */
+.tree-tiles .tile.is-selected,
+.tree-tiles .tile[aria-pressed='true'],
+.tree-chips .chip.is-selected,
+.tree-chips .chip[aria-pressed='true'] {
+  background: var(--accent-surface);
+  border-color: var(--accent);
+}
+
+/* Their reply: the KO words of a danger row and a move's priority. The heading and its ⓘ share a line (`.tree-reply-head`,
+   and `.tree-choice-head` for "Your choice"). */
+.tree-reply-head,
+.tree-choice-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  margin: 0 0 var(--space-2);
+}
+
+.tree-reply-head h4,
+.tree-choice-head h4 {
+  margin: 0;
+}
+
+.tree-reply-ko {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.tree-reply-priority {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* The damage band: the HP bar with the move's roll range over its right end. Segments are placed by inline left/width.
+   They are spans (the bar sits inside move buttons, which hold phrasing content only), drawn as blocks. */
+.band {
+  display: block;
+  position: relative;
+  height: 10px;
+  background: var(--hp-track);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.band-fill,
+.band-low,
+.band-range,
+.band-ghost {
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.band-fill {
+  left: 0;
+  background: var(--hp);
+}
+
+.band-low {
+  background: var(--dmg);
+}
+
+.band-range,
+.band-ghost {
+  background: repeating-linear-gradient(135deg, var(--band) 0 4px, var(--dmg) 4px 8px);
+}
+
+.band-ghost {
+  opacity: var(--dim);
+}
+
+/* A bar the lowest roll empties (`bandKo`): coloured to the end, so it reads as a KO and not as a broken black
+   bar. By whose HP it is (`data-side`): red when his Pokémon is KO'd, --ok when theirs is, as the words say. */
+.band.is-ko[data-side='mine'] .band-low {
+  background: var(--danger);
+}
+
+.band.is-ko[data-side='theirs'] .band-low {
+  background: var(--ok);
+}
+
+.band-caption {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* The crit split: a surface block, one row per case, no outline (borders only on controls). A row wraps (flex)
+   so it never scrolls sideways in a narrow column. */
+.crit-split {
+  background: var(--surface);
+  border-radius: var(--radius);
+}
+
+.crit-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-2);
+}
+
+.crit-label {
+  flex: 0 0 auto;
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.crit-chance {
+  flex: 1 1 60px;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.crit-damage {
+  flex: 1 1 170px;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.crit-row .band {
+  flex: 2 1 80px;
+  min-width: 80px;
+}
+
+.crit-ko {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.crit-ko.is-ok {
+  color: var(--ok);
+}
+
+.crit-ko.is-danger {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.crit-none {
+  margin: 0;
+  padding: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Next move likelihood: line 1 is the name, the bar and the percent; then the range and the KO words, each across the
+   whole row. Every row (and its button) has the same tracks, none sized by its content, so the bars start at one x and
+   share one width, and their lengths compare from row to row. */
+.likelihood {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.likelihood-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 40%) minmax(0, 1fr) 7ch;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.likelihood-pick {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 40%) minmax(0, 1fr) 7ch;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  width: calc(100% + 2 * var(--space-2));
+  margin: calc(-1 * var(--space-2));
+  padding: var(--space-2);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+
+.likelihood-pick:hover,
+.likelihood-pick:focus-visible {
+  border-color: var(--accent);
+}
+
+/* The row picked: the accent surface alone. One signal each: the fill says picked, the left stripe says it can
+   KO him, and the accent border is hover and focus only. */
+.likelihood-pick[aria-pressed='true'] {
+  background: var(--accent-surface);
+}
+
+.likelihood-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.likelihood-move {
+  font-weight: 600;
+}
+
+.likelihood-bar {
+  display: block;
+  height: 6px;
+  background: var(--hp-track);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.likelihood-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--accent-fill);
+}
+
+.likelihood-percent {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.likelihood-range,
+.likelihood-ko {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.likelihood-range,
+.likelihood-ko {
+  grid-column: 1 / -1;
+}
+
+/* Tone: the stripe and the words, on the row's own edge (a pseudo-element, so a pressed row's fill does not hide it).
+   It takes no clicks: a click on it reaches the row's button. */
+.likelihood-row.is-danger::before,
+.likelihood-row.is-warn::before {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--stripe);
+}
+
+.likelihood-row.is-danger::before {
+  background: var(--danger);
+}
+
+.likelihood-row.is-warn::before {
+  background: var(--warn);
+}
+
+.likelihood-row.is-zero {
+  color: var(--text-muted);
+}
+
+/* The type chip: a small label in the type's colour (the --type-* tokens, the accent fill until they exist). */
+.type-chip {
+  display: inline-block;
+  padding: 0 6px;
+  background: var(--accent-fill);
+  border-radius: var(--radius);
+  color: var(--accent-fill-text);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.type-chip[data-type='Normal'] {
+  background: var(--type-normal, var(--accent-fill));
+}
+
+.type-chip[data-type='Fighting'] {
+  background: var(--type-fighting, var(--accent-fill));
+}
+
+.type-chip[data-type='Flying'] {
+  background: var(--type-flying, var(--accent-fill));
+}
+
+.type-chip[data-type='Poison'] {
+  background: var(--type-poison, var(--accent-fill));
+}
+
+.type-chip[data-type='Ground'] {
+  background: var(--type-ground, var(--accent-fill));
+}
+
+.type-chip[data-type='Rock'] {
+  background: var(--type-rock, var(--accent-fill));
+}
+
+.type-chip[data-type='Bug'] {
+  background: var(--type-bug, var(--accent-fill));
+}
+
+.type-chip[data-type='Ghost'] {
+  background: var(--type-ghost, var(--accent-fill));
+}
+
+.type-chip[data-type='Steel'] {
+  background: var(--type-steel, var(--accent-fill));
+}
+
+.type-chip[data-type='Fire'] {
+  background: var(--type-fire, var(--accent-fill));
+}
+
+.type-chip[data-type='Water'] {
+  background: var(--type-water, var(--accent-fill));
+}
+
+.type-chip[data-type='Grass'] {
+  background: var(--type-grass, var(--accent-fill));
+}
+
+.type-chip[data-type='Electric'] {
+  background: var(--type-electric, var(--accent-fill));
+}
+
+.type-chip[data-type='Psychic'] {
+  background: var(--type-psychic, var(--accent-fill));
+}
+
+.type-chip[data-type='Ice'] {
+  background: var(--type-ice, var(--accent-fill));
+}
+
+.type-chip[data-type='Dragon'] {
+  background: var(--type-dragon, var(--accent-fill));
+}
+
+.type-chip[data-type='Dark'] {
+  background: var(--type-dark, var(--accent-fill));
+}
+
+/* Below the full AI odds (PKP_AI_ODDS): no bar and no percent. The name takes the whole first line; at `ranked` it leaves
+   the last track to the row's place ("1st", "=2nd"), where the percent sits at full. */
+.likelihood.is-plain .likelihood-name {
+  grid-column: 1 / -1;
+}
+
+.likelihood.is-ranked .likelihood-name {
+  grid-column: 1 / 3;
+}
+
+.likelihood-rank {
+  grid-column: 3;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+/* The `likeliest` level's one line over their moves: "Bonsly's likeliest move: Stealth Rock". */
+.tree-reply-likeliest {
+  margin: 0 0 var(--space-2);
+}
+
+/* The AI is not modelled: the bar is an empty dashed outline, so it reads as unknown and not as 0%. */
+.likelihood-bar.is-unknown {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+}
+
+.likelihood-row.is-zero .likelihood-pick {
+  color: var(--text-muted);
+}

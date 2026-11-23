@@ -1,0 +1,19 @@
+# The image's build context: everything is ignored, then only what the build needs is let
+# back in, plus the data bundle for the with-data target. Never in the context, named here for the reader:
+#   data/ (the ROM, saves and extracted data), *.nds, *.dsv, *.sav, .git, node_modules/, test/, the rest of dist/
+*
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.server.json
+!vite.config.ts
+!src/
+!web/
+!dist/bundle/pkp-data/
+
+# Ignored again even inside the paths let in above (later lines win).
+**/*.nds
+**/*.dsv
+**/*.sav
+**/node_modules
+dist/bundle/pkp-data.tar.gz

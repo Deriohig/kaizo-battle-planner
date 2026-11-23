@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2023",
+    "noUncheckedIndexedAccess": true
+  },
+  "include": ["src", "test", "scripts", "vitest.config.ts"],
+  "exclude": ["test/unit/web"]
+}
