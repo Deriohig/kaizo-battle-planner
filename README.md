@@ -11,9 +11,9 @@ that wins 95% of the time still ends the run one fight in twenty, so every proba
 
 Try it at [2-29-142-203.sslip.io](https://2-29-142-203.sslip.io) with your own DeSmuME save.
 
-![The Fight view, turn 1 against Leader Roark: BubbleBeam's damage and KO chances on a Focus Sash Bonsly, the AI's odds for its reply, and who Roark sends in next](docs/screenshots/kaizo-plan.png)
+![The Fight view, turn 1 against Leader Roark: BubbleBeam's damage and KO chances on a Focus Sash Bonsly, the AI's odds for its reply, and who Roark sends in next](https://raw.githubusercontent.com/Deriohig/kaizo-battle-planner/main/docs/screenshots/kaizo-plan.png)
 
-![The Matchups view for Roark's Bonsly: damage both ways, speed notes, the AI's picks and who it sends in if Bonsly faints](docs/screenshots/kaizo-matchups.png)
+![The Matchups view for Roark's Bonsly: damage both ways, speed notes, the AI's picks and who it sends in if Bonsly faints](https://raw.githubusercontent.com/Deriohig/kaizo-battle-planner/main/docs/screenshots/kaizo-matchups.png)
 
 Both screenshots are from my own run, at the Oreburgh Gym fight against Roark.
 
