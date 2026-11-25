@@ -9,7 +9,7 @@ KO chances, the trainer AI's exact odds for its next move, and who it sends in w
 In a nuzlocke a Pokémon that faints is gone for good, and Kaizo trainers bring full teams with competitive sets. A line
 that wins 95% of the time still ends the run one fight in twenty, so every probability the planner shows is exact.
 
-Try it at [2-29-142-203.sslip.io](https://2-29-142-203.sslip.io) with your own DeSmuME save.
+Try it at [ai.2-29-142-203.sslip.io](https://ai.2-29-142-203.sslip.io) with your own DeSmuME save.
 
 ![The Fight view, turn 1 against Leader Roark: BubbleBeam's damage and KO chances on a Focus Sash Bonsly, the AI's odds for its reply, and who Roark sends in next](https://raw.githubusercontent.com/Deriohig/kaizo-battle-planner/main/docs/screenshots/kaizo-plan.png)
 
