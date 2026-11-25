@@ -1,5 +1,7 @@
 # Platinum Kaizo planner
 
+[![ci](https://github.com/Deriohig/kaizo-battle-planner/actions/workflows/ci.yml/badge.svg)](https://github.com/Deriohig/kaizo-battle-planner/actions/workflows/ci.yml)
+
 A battle planner for nuzlocke runs of Pokémon Platinum Kaizo, a difficulty hack of Pokémon Platinum. You load your
 save, pick the next trainer and walk the fight as a tree. For each of your choices it shows the damage, the trainer
 AI's exact odds for its reply, and every outcome with its probability, down to who faints and how much EXP a knockout
@@ -8,6 +10,8 @@ pays.
 In a nuzlocke a Pokémon that faints is gone for good, and Kaizo trainers bring full teams with competitive sets. A line
 that wins 95% of the time still ends the run one fight in twenty, so the planner works with exact probabilities
 instead of estimates.
+
+Try it at [2-29-142-203.sslip.io](https://2-29-142-203.sslip.io) with your own DeSmuME save.
 
 ## What it does
 
