@@ -3,15 +3,19 @@
 [![ci](https://github.com/Deriohig/kaizo-battle-planner/actions/workflows/ci.yml/badge.svg)](https://github.com/Deriohig/kaizo-battle-planner/actions/workflows/ci.yml)
 
 A battle planner for nuzlocke runs of Pokémon Platinum Kaizo, a difficulty hack of Pokémon Platinum. You load your
-save, pick the next trainer and walk the fight as a tree. For each of your choices it shows the damage, the trainer
-AI's exact odds for its reply, and every outcome with its probability, down to who faints and how much EXP a knockout
-pays.
+save, pick the next trainer and write the fight as a plan, one turn at a time. Each turn shows your moves' damage and
+KO chances, the trainer AI's exact odds for its next move, and who it sends in when one of its Pokémon faints.
 
 In a nuzlocke a Pokémon that faints is gone for good, and Kaizo trainers bring full teams with competitive sets. A line
-that wins 95% of the time still ends the run one fight in twenty, so the planner works with exact probabilities
-instead of estimates.
+that wins 95% of the time still ends the run one fight in twenty, so every probability the planner shows is exact.
 
 Try it at [2-29-142-203.sslip.io](https://2-29-142-203.sslip.io) with your own DeSmuME save.
+
+![The Fight view, turn 1 against Leader Roark: BubbleBeam's damage and KO chances on a Focus Sash Bonsly, the AI's odds for its reply, and who Roark sends in next](docs/screenshots/kaizo-plan.png)
+
+![The Matchups view for Roark's Bonsly: damage both ways, speed notes, the AI's picks and who it sends in if Bonsly faints](docs/screenshots/kaizo-matchups.png)
+
+Both screenshots are from my own run, at the Oreburgh Gym fight against Roark.
 
 ## What it does
 
@@ -22,19 +26,20 @@ Try it at [2-29-142-203.sslip.io](https://2-29-142-203.sslip.io) with your own D
   `docs/data-discrepancies.md`.
 - Starts a draft team from the save that you can change without touching the save file: HP, status, held item, level,
   moves and order.
-- The fight tree: every legal move and switch with its damage range and KO chance, the AI's reply as exact fractions,
-  outcomes grouped by what matters (faints, HP left, status, crits), and an outline of every branch you have explored
-  with its probability from the root.
-- A matchups view: each of your Pokémon against each of the trainer's, with damage both ways and the move the AI picks.
-- Carries a won fight into the next trainer of the split, with HP, status, items, EXP and levels as the engine leaves
-  them.
+- The plan, one step per turn: who moves first, your moves' damage ranges with crits split out and KO chances, the
+  AI's reply as exact odds, and who it sends in after a knockout. You set the field (weather, Trick Room, Stealth Rock,
+  screens, status and stat stages), mark the trainer's Pokémon fainted as the fight goes, and save copies of a plan or
+  copy it as text.
+- A matchups view: each of your Pokémon against each of the trainer's, with damage both ways, speed order, the move the
+  AI picks and who it sends in if its Pokémon faints.
+- Lists the split's next fights in order, with a search over every trainer.
 - Runs locally against your own files, or hosted with Docker, where each player loads their save in the browser.
 
 ## Why I built it
 
 I play Platinum Kaizo as a nuzlocke. Planning a gym fight meant juggling the hack's docs, a damage calculator and
 guesswork about what the trainer AI would do. I wanted one tool that knows this hack's exact rules and shows me the
-whole tree before I commit to a move.
+AI's odds before I commit to a move.
 
 ## How it works
 
@@ -56,9 +61,10 @@ Notes on the parts are in `docs/`: what the engine models (`engine-model.md`), w
 ## Project history
 
 The first design was a solver that proved winning lines by searching the game tree. It worked on short fights, but full
-6v6 fights often hit the time limit without a proof, and being handed a line was not how I wanted to play. So I changed
-direction: the planner now lays out the tree and lets you explore it. The solver stayed in the code, isolated behind
-the engine's interface.
+6v6 fights often hit the time limit without a proof, and being handed a line was not how I wanted to play. The second
+version laid out the whole tree of outcomes for you to explore. The page now works one turn at a time: you write the
+plan, and the server works out the numbers for that turn from the engine's battle state. The solver and the tree's
+server routes are still in the code, isolated behind the engine's interface.
 
 This repository is a cleaned snapshot of my private working repo, with the history squashed.
 
